@@ -1,6 +1,6 @@
 # Maintainer: Luis Vervaet <luisvervaet@gmail.com>
 
-pkgname=zen-browser-avx2-bin-git
+pkgname=zen-twilight-avx2-bin
 _pkgname=zen-twilight
 _realpkgver=twilight
 _desktopname=zen-twilight
