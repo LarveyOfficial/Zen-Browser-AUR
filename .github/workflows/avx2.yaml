@@ -19,14 +19,14 @@ jobs:
           CURRENT_VERSION=$(curl -s https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=zen-browser-avx2-bin-git | grep -oP '^pkgver=\K.*')
           echo "Current version is current $CURRENT_VERSION"
           
-          if [ "$LATEST_VERSION" != "$CURRENT_VERSION" ]; then
-          echo "need_update=true" >> "$GITHUB_OUTPUT"
+          if [[ "$LATEST_VERSION" != "$CURRENT_VERSION" ]]; then
+            echo "need_update=true" >> "$GITHUB_OUTPUT"
           else
-          echo "need_update=false" >> "$GITHUB_OUTPUT"
+            echo "need_update=false" >> "$GITHUB_OUTPUT"
           fi
           
-          echo "latest_version=$LATEST_VERSION" >> "$GITHUB_OUTPUT"
-          echo "current_version=$CURRENT_VERSION" >> "$GITHUB_OUTPUT"
+          echo "latest_version=$LATEST_VERSION" >> "$GITHUB_OUTPUT";
+          echo "current_version=$CURRENT_VERSION" >> "$GITHUB_OUTPUT";
       - name: Update PKGBUILD
         if: steps.check_version.outputs.need_update == 'true'
         run: |
