@@ -11,3 +11,4 @@ jobs:
 
       - run: PACKAGE_VERSION=$(curl -s https://api.github.com/repos/zen-browser/desktop/git/refs/tags/twilight | jq -r '.object.sha' | cut -c1-7) && echo "package_version=$PACKAGE_VERSION" >> $GITHUB_ENV
       - run: sed "s/PACKAGE_VERSION/${package_version}/g" template/avx2/PKGBUILD_avx2_template > avx2/PKGBUILD
+      - run: cat avx2/PKGBUILD
