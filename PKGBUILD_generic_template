@@ -1,9 +1,9 @@
 # Maintainer: Luis Vervaet <luisvervaet@gmail.com>
 
 pkgname=zen-browser-bin-git
-_pkgname=zen-browser
+_pkgname=zen-twilight
 _realpkgver=twilight
-_desktopname=zen-alpha
+_desktopname=zen-twilight
 pkgver=PACKAGE_VERSION
 pkgrel=1
 pkgdesc="Performance oriented Firefox-based web browser (Unstable)"
