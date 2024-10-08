@@ -47,4 +47,5 @@ jobs:
           ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
           commit_message: Updated to ${latest_version}
           updpkgsums: true
+          post_process: rm *.tar.bz2
           ssh_keyscan_types: rsa,ecdsa,ed25519
