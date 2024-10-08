@@ -1,4 +1,4 @@
-name: Update Twilight AUR Package - zen-browser-bin-git
+name: Update Twilight AUR Package - zen-twilight-bin
 
 on:
   workflow_dispatch:
