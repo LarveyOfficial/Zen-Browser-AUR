@@ -1,0 +1,50 @@
+name: Update Twilight AUR Package - zen-browser-bin-git
+
+on:
+  workflow_dispatch:
+
+jobs:
+  aur-publish:
+    runs-on: ubuntu-latest
+    outputs:
+      need_update: ${{ steps.check_version.outputs.need_update}}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Check if update is required
+        id: check_version
+        run: | 
+          LATEST_VERSION=$(curl -s https://api.github.com/repos/zen-browser/desktop/git/refs/tags/twilight | jq -r '.object.sha' | cut -c1-7)
+          echo "Latest version is currently: $LATEST_VERSION"
+          CURRENT_VERSION=$(curl -s https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=zen-browser-bin-git | grep '^pkgver=.*' | sed 's/^.*=//')
+          echo "Current version is currently: $CURRENT_VERSION"
+          
+          if [[ "$LATEST_VERSION" != "$CURRENT_VERSION" ]]; then
+            echo "need_update=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "need_update=false" >> "$GITHUB_OUTPUT"
+          fi 
+          
+          echo "latest_version=$LATEST_VERSION" >> $GITHUB_ENV
+          echo "current_version=$CURRENT_VERSION" >> $GITHUB_ENV
+          
+      - name: Update PKGBUILD
+        if: steps.check_version.outputs.need_update == 'true'
+        run: |
+          sed "s/PACKAGE_VERSION/${latest_version}/g" template/generic/SRCINFO_generic_template > generic/.SRCINFO
+          sed "s/PACKAGE_VERSION/${latest_version}/g" template/generic/PKGBUILD_generic_template > generic/PKGBUILD
+      - name: Publish AUR package
+        uses: KSXGitHub/github-actions-deploy-aur@v3.0.1
+        if: steps.check_version.outputs.need_update == 'true'
+        with:
+          pkgname: zen-browser-bin-git
+          pkgbuild: generic/PKGBUILD
+          assets: |
+            generic/policies.json
+            generic/zen-twilight.desktop
+            generic/zen-twilight.sh
+          commit_username: ${{ secrets.AUR_USERNAME }}
+          commit_email: ${{ secrets.AUR_EMAIL }}
+          ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+          commit_message: Updated to ${latest_version}
+          updpkgsums: true
+          ssh_keyscan_types: rsa,ecdsa,ed25519
