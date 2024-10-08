@@ -1,4 +1,4 @@
-pkgbase = zen-browser-bin-git
+pkgbase = zen-twilight-bin
         pkgdesc = Performance oriented Firefox-based web browser (Unstable)
         pkgver = PACKAGE_VERSION
         pkgrel = 1
@@ -31,4 +31,4 @@ pkgbase = zen-browser-bin-git
         sha256sums = temp
         sha256sums = temp
 
-pkgname = zen-browser-bin-git
+pkgname = zen-twilight-bin
