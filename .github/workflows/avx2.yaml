@@ -38,9 +38,9 @@ jobs:
           pkgname: zen-browser-avx2-bin-git
           pkgbuild: avx2/PKGBUILD
           assets: |
-            policies.json
-            zen-twilight.desktop
-            zen-twilight.sh
+            avx2/policies.json
+            avx2/zen-twilight.desktop
+            avx2/zen-twilight.sh
           commit_username: ${{ secrets.AUR_USERNAME }}
           commit_email: ${{ secrets.AUR_EMAIL }}
           ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
