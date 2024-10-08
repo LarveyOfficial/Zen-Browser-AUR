@@ -1,4 +1,4 @@
-name: Update Twilight AVX2 AUR Package - zen-browser-avx2-bin-git
+name: Update Twilight AVX2 AUR Package - zen-twilight-avx2-bin
 
 on:
   workflow_dispatch:
