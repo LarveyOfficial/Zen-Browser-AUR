@@ -8,7 +8,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       need_update: ${{ steps.check_version.outputs.need_update}}
-      latest_version: ${{ steps.check_version.outputs.latest_version}}
     steps:
       - uses: actions/checkout@v3
       - name: Check if update is required
@@ -23,10 +22,11 @@ jobs:
             echo "need_update=true" >> "$GITHUB_OUTPUT"
           else
             echo "need_update=false" >> "$GITHUB_OUTPUT"
-          fi
+          fi 
           
-          echo "latest_version=$LATEST_VERSION" >> "$GITHUB_OUTPUT";
-          echo "current_version=$CURRENT_VERSION" >> "$GITHUB_OUTPUT";
+          echo "latest_version=$LATEST_VERSION" >> $GITHUB_ENV
+          echo "current_version=$CURRENT_VERSION" >> $GITHUB_ENV
+          
       - name: Update PKGBUILD
         if: steps.check_version.outputs.need_update == 'true'
         run: |
