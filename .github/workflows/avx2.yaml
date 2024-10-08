@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  update_version:
+  aur-publish:
     runs-on: ubuntu-latest
     outputs:
       need_update: ${{ steps.check_version.outputs.need_update}}
@@ -14,9 +14,9 @@ jobs:
         id: check_version
         run: | 
           LATEST_VERSION=$(curl -s https://api.github.com/repos/zen-browser/desktop/git/refs/tags/twilight | jq -r '.object.sha' | cut -c1-7)
-          echo "Latest version is currently $LATEST_VERSION"
+          echo "Latest version is currently: $LATEST_VERSION"
           CURRENT_VERSION=$(curl -s https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=zen-browser-avx2-bin-git | grep '^pkgver=.*' | sed 's/^.*=//')
-          echo "Current version is current $CURRENT_VERSION"
+          echo "Current version is currently: $CURRENT_VERSION"
           
           if [[ "$LATEST_VERSION" != "$CURRENT_VERSION" ]]; then
             echo "need_update=true" >> "$GITHUB_OUTPUT"
@@ -32,16 +32,13 @@ jobs:
         run: |
           sed "s/PACKAGE_VERSION/${latest_version}/g" template/avx2/SRCINFO_avx2_template > avx2/.SRCINFO
           sed "s/PACKAGE_VERSION/${latest_version}/g" template/avx2/PKGBUILD_avx2_template > avx2/PKGBUILD
-      - name: Upload to AUR
-        if: steps.check_version.outputs.need_update == 'true'
-        run: |
-          cat avx2/PKGBUILD
-          cat avx2/.SRCINFO
-          
-  # aur-release:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v3
-
-  #     - run: PACKAGE_VERSION=$(curl -s https://api.github.com/repos/zen-browser/desktop/git/refs/tags/twilight | jq -r '.object.sha' | cut -c1-7) && echo "package_version=$PACKAGE_VERSION" >> $GITHUB_ENV
-  #     - run: sed "s/PACKAGE_VERSION/${package_version}/g" template/avx2/PKGBUILD_avx2_template > avx2/PKGBUILD
+      - name: Publish AUR package
+        uses: KSXGitHub/github-actions-deploy-aur@v3.0.1
+        with:
+          pkgname: zen-browser-avx2-bin-git
+          pkgbuild: avx2/PKGBUILD
+          commit_username: ${{ secrets.AUR_USERNAME }}
+          commit_email: ${{ secrets.AUR_EMAIL }}
+          ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+          commit_message: Update to ${{ latest_version }}
+          ssh_keyscan_types: rsa,ecdsa,ed25519
