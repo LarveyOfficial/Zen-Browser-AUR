@@ -34,7 +34,6 @@ jobs:
           sed "s/PACKAGE_VERSION/${latest_version}/g" template/avx2/PKGBUILD_avx2_template > avx2/PKGBUILD
       - name: Publish AUR package
         uses: KSXGitHub/github-actions-deploy-aur@v3.0.1
-        if: steps.check_version.outputs.need_update == 'true'
         with:
           pkgname: zen-twilight-avx2-bin
           pkgbuild: avx2/PKGBUILD
