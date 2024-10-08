@@ -18,6 +18,7 @@ jobs:
           echo "Latest version is currently $LATEST_VERSION"
           curl -s https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=zen-browser-avx2-bin | grep -oP '^pkgver=\K.*'
           curl -s https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=zen-browser-avx2-bin-git | grep -oP '^pkgver=\K.*'
+          echo "yo"
           CURRENT_VERSION=$(curl -s https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=zen-browser-avx2-bin-git | grep -oP '^pkgver=\K.*')
           echo "Current version is current $CURRENT_VERSION"
           
