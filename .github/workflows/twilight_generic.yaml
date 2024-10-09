@@ -1,3 +1,5 @@
+# This is a placeholder file for the twilight branch. The real workflow can be found there!
+
 name: Update Twilight AUR Package - zen-twilight-bin
 
 on:
@@ -8,6 +10,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
-      - run: PACKAGE_VERSION=$(curl -s https://api.github.com/repos/zen-browser/desktop/git/refs/tags/twilight | jq -r '.object.sha' | cut -c1-7) && echo "package_version=$PACKAGE_VERSION" >> $GITHUB_ENV
-      - run: sed "s/PACKAGE_VERSION/${package_version}/g" template/generic/PKGBUILD_generic_template > generic/PKGBUILD
+      - run: echo "Hello World!"
