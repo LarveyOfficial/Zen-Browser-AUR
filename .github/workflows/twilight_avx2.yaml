@@ -1,6 +1,8 @@
 name: Update Twilight AVX2 AUR Package - zen-twilight-avx2-bin
 
 on:
+  schedule:
+    - cron: "0 * * * *"
   workflow_dispatch:
 
 jobs:
