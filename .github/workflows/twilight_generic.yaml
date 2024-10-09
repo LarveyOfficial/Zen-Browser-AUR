@@ -1,6 +1,8 @@
 name: Update Twilight AUR Package - zen-twilight-bin
 
 on:
+  schedule:
+    - cron: "0 * * * *"
   workflow_dispatch:
 
 jobs:
