@@ -32,7 +32,6 @@ jobs:
       - name: Update PKGBUILD
         if: steps.check_version.outputs.need_update == 'true'
         run: |
-          sed "s/PACKAGE_VERSION/${latest_version}/g" template/generic/SRCINFO_generic_template > generic/.SRCINFO
           sed "s/PACKAGE_VERSION/${latest_version}/g" template/generic/PKGBUILD_generic_template > generic/PKGBUILD
       - name: Publish AUR package
         uses: KSXGitHub/github-actions-deploy-aur@v3.0.1
