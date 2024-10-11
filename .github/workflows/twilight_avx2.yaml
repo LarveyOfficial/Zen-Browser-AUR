@@ -30,7 +30,7 @@ jobs:
           echo "current_version=$CURRENT_VERSION" >> $GITHUB_ENV
           
       - name: Update PKGBUILD
-        if: steps.check_version.outputs.need_update == 'true'
+        if: ${{(steps.check_version.outputs.need_update == 'true') || (github.event_name == 'workflow_dispatch')}}
         run: |
           sed "s/PACKAGE_VERSION/${latest_version}/g" template/avx2/PKGBUILD_avx2_template > avx2/PKGBUILD
       - name: Publish AUR package
