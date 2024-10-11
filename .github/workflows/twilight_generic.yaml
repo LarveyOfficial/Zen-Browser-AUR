@@ -30,12 +30,12 @@ jobs:
           echo "current_version=$CURRENT_VERSION" >> $GITHUB_ENV
           
       - name: Update PKGBUILD
-        if: steps.check_version.outputs.need_update == 'true'
+        if: ${{(steps.check_version.outputs.need_update == 'true') || (github.event_name == 'workflow_dispatch')}}
         run: |
           sed "s/PACKAGE_VERSION/${latest_version}/g" template/generic/PKGBUILD_generic_template > generic/PKGBUILD
       - name: Publish AUR package
         uses: KSXGitHub/github-actions-deploy-aur@v3.0.1
-        if: steps.check_version.outputs.need_update == 'true'
+        if: ${{(steps.check_version.outputs.need_update == 'true') || (github.event_name == 'workflow_dispatch')}}
         with:
           pkgname: zen-twilight-bin
           pkgbuild: generic/PKGBUILD
