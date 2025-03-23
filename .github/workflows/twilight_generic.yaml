@@ -26,7 +26,7 @@ jobs:
             echo "need_update=false" >> "$GITHUB_OUTPUT"
           fi
 
-          if [[ "$LATEST_VERSION" == "null"]]; then
+          if [[ "$LATEST_VERSION" == "null" ]]; then
             echo "need_update=false" >> "$GITHUB_OUTPUT"
           fi
           
