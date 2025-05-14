@@ -20,6 +20,6 @@ jobs:
       - name: Update PKGBUILD
         if: ${{(steps.check_version.outputs.need_update == 'true') || (github.event_name == 'workflow_dispatch')}}
         run: |
-          sed "s/PACKAGE_VERSION/${github.event.inputs.version}/g" template/stable/PKGBUILD_stable_template > stable/PKGBUILD
+          sed "s/PACKAGE_VERSION/${{github.event.inputs.version}}/g" template/stable/PKGBUILD_stable_template > stable/PKGBUILD
           echo stable/PKGBUILD
       
