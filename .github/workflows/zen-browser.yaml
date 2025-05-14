@@ -23,5 +23,6 @@ jobs:
           commit_email: ${{ secrets.AUR_EMAIL }}
           ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
           updpkgsums: true
+          post_process: rm *.tar.bz2
           commit_message: Updated to 1.12.4b
           ssh_keyscan_types: rsa,ecdsa,ed25519
