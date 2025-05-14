@@ -6,6 +6,10 @@ on:
       version:
         description: "Version Number"
         required: true
+      versionNum:
+        description: "AUR Update Version Number"
+        required: true
+        default: "1"
       message:
         description: "Commit Message"
         required: true
@@ -20,7 +24,7 @@ jobs:
       - name: Update PKGBUILD
         if: ${{(steps.check_version.outputs.need_update == 'true') || (github.event_name == 'workflow_dispatch')}}
         run: |
-          sed "s/PACKAGE_VERSION/${{github.event.inputs.version}}/g" template/stable/PKGBUILD_stable_template > stable/PKGBUILD
+          sed -e "s/PACKAGE_VERSION/${{github.event.inputs.version}}/g" -e "s/PACKAGE_ITERATION/${{github.event.inputs.versionNum}}/g" template/stable/PKGBUILD_stable_template > stable/PKGBUILD
       - name: 'Save PKGBUILD for Validation'
         uses: actions/upload-artifact@v4
         with:
