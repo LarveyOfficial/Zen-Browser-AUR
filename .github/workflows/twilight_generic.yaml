@@ -37,5 +37,19 @@ jobs:
         if: ${{(steps.check_version.outputs.need_update == 'true') || (github.event_name == 'workflow_dispatch')}}
         run: |
           sed "s/PACKAGE_VERSION/${latest_version}/g" template/generic/PKGBUILD_generic_template > generic/PKGBUILD
-          echo generic/PKGBUILD
+      - name: Publish AUR package
+        uses: KSXGitHub/github-actions-deploy-aur@v3.0.1
+        if: ${{(steps.check_version.outputs.need_update == 'true') || (github.event_name == 'workflow_dispatch')}}
+        with:
+          pkgname: zen-twilight-bin
+          pkgbuild: generic/PKGBUILD
+          assets: |
+            generic/policies.json
+            generic/zen-twilight.desktop
+            generic/zen-twilight.sh
+          commit_username: ${{ secrets.AUR_USERNAME }}
+          commit_email: ${{ secrets.AUR_EMAIL }}
+          ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+          commit_message: AUTO - Updated to the Latest Version
+          ssh_keyscan_types: rsa,ecdsa,ed25519
       
