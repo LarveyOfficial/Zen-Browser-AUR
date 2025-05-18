@@ -45,6 +45,6 @@ jobs:
           commit_email: ${{ secrets.AUR_EMAIL }}
           ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
           updpkgsums: true
-          post_process: rm *.tar.bz2
+          post_process: rm *.tar.xz
           commit_message: ${{github.event.inputs.message}}
           ssh_keyscan_types: rsa,ecdsa,ed25519
