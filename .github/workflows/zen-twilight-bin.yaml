@@ -22,6 +22,7 @@ jobs:
           
           if [[ "$LATEST_VERSION" != "$CURRENT_VERSION" ]]; then
             echo "need_update=true" >> "$GITHUB_OUTPUT"
+            echo "update_message=Updated to $LATEST_VERSION" >> "$GITHUB_OUTPUT"
           else
             echo "need_update=false" >> "$GITHUB_OUTPUT"
           fi
@@ -37,6 +38,12 @@ jobs:
         if: ${{(steps.check_version.outputs.need_update == 'true') || (github.event_name == 'workflow_dispatch')}}
         run: |
           sed "s/PACKAGE_VERSION/${latest_version}/g" template/twilight/PKGBUILD_twilight_template > twilight/PKGBUILD
+      - name: 'Save PKGBUILD for Validation'
+        uses: actions/upload-artifact@v4
+        with:
+          name: PKGBUILD
+          path: stable/PKGBUILD
+          retention-days: 1
       - name: Publish AUR package
         uses: KSXGitHub/github-actions-deploy-aur@v3.0.1
         if: ${{(steps.check_version.outputs.need_update == 'true') || (github.event_name == 'workflow_dispatch')}}
@@ -50,6 +57,6 @@ jobs:
           commit_username: ${{ secrets.AUR_USERNAME }}
           commit_email: ${{ secrets.AUR_EMAIL }}
           ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
-          commit_message: AUTO - Updated to the Latest Version
+          commit_message: ${{ steps.check_version.outputs.update_message }}
           ssh_keyscan_types: rsa,ecdsa,ed25519
       
