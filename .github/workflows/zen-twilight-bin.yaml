@@ -40,6 +40,7 @@ jobs:
           sed "s/PACKAGE_VERSION/${latest_version}/g" template/twilight/PKGBUILD_twilight_template > twilight/PKGBUILD
       - name: 'Save PKGBUILD for Validation'
         uses: actions/upload-artifact@v4
+        if: ${{(steps.check_version.outputs.need_update == 'true') || (github.event_name == 'workflow_dispatch')}}
         with:
           name: PKGBUILD
           path: stable/PKGBUILD
