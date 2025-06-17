@@ -1,53 +1,62 @@
-name: Update Twilight AUR Package - zen-twilight-bin
+name: Update AUR Package - zen-twilight-bin
 
 on:
   schedule:
-    - cron: "0 * * * *"
+    # Runs every hour at the start of the hour
+    - cron: '0 * * * *'
   workflow_dispatch:
 
 jobs:
-  aur-publish:
+  check_for_updates:
     runs-on: ubuntu-latest
     outputs:
-      need_update: ${{ steps.check_version.outputs.need_update}}
+      needs_update: ${{ steps.version_check.outputs.needs_update }}
+      new_pkgver: ${{ steps.version_check.outputs.new_pkgver }}
+      commit_message: ${{ steps.version_check.outputs.commit_message }}
     steps:
-      - uses: actions/checkout@v3
-      - name: Check if update is required
-        id: check_version
-        run: | 
-          LATEST_VERSION=$(curl -s https://api.github.com/repos/zen-browser/desktop/releases/tags/twilight | jq -r '.name' | sed s/"Twilight build - "// | sed s/"at"/"$"/ | cut -f1 -d"$" | sed s/"("// | sed s/" "/"-"/ | sed s/[[:blank:]]*$// | sed s/"-"/"."/g)
-          echo "Latest version is currently: $LATEST_VERSION"
-          CURRENT_VERSION=$(curl -s https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=zen-twilight-bin | grep '^pkgver=.*' | sed 's/^.*=//')
-          echo "Current version is currently: $CURRENT_VERSION"
-          
-          if [[ "$LATEST_VERSION" != "$CURRENT_VERSION" ]]; then
-            echo "need_update=true" >> "$GITHUB_OUTPUT"
-            echo "update_message=Updated to $LATEST_VERSION" >> "$GITHUB_OUTPUT"
+      - name: Compare versions and decide action
+        id: version_check
+        run: |
+          LATEST_VERSION=$(curl -s https://api.github.com/repos/zen-browser/desktop/releases/tags/twilight | jq -r '.name' | sed -e 's/Twilight build - //' -e 's/ at.*//' -e 's/ /-/g' -e 's/[()]//g' -e 's/-/\./g')
+          echo "Latest GitHub version: $LATEST_VERSION"
+
+          CURRENT_VERSION=$(curl -s 'https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=zen-twilight-bin' | grep '^pkgver=' | sed 's/^pkgver=//')
+          echo "Current AUR version: $CURRENT_VERSION"
+
+          if [[ -z "$LATEST_VERSION" || "$LATEST_VERSION" == "null" ]]; then
+            echo "Could not retrieve latest version from GitHub."
+            echo "needs_update=false" >> "$GITHUB_OUTPUT"
+          elif [[ "$LATEST_VERSION" != "$CURRENT_VERSION" ]]; then
+            echo "New version found. Preparing update."
+            echo "needs_update=true" >> "$GITHUB_OUTPUT"
+            echo "new_pkgver=$LATEST_VERSION" >> "$GITHUB_OUTPUT"
+            echo "commit_message=chore: Update to version $LATEST_VERSION" >> "$GITHUB_OUTPUT"
           else
-            echo "need_update=false" >> "$GITHUB_OUTPUT"
+            echo "Package is up-to-date."
+            echo "needs_update=false" >> "$GITHUB_OUTPUT"
           fi
 
-          if [[ "$LATEST_VERSION" == "null" ]]; then
-            echo "need_update=false" >> "$GITHUB_OUTPUT"
-          fi
-          
-          echo "latest_version=$LATEST_VERSION" >> $GITHUB_ENV
-          echo "current_version=$CURRENT_VERSION" >> $GITHUB_ENV
-          
+  aur-publish:
+    needs: check_for_updates
+    if: needs.check_for_updates.outputs.needs_update == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
       - name: Update PKGBUILD
-        if: ${{(steps.check_version.outputs.need_update == 'true') || (github.event_name == 'workflow_dispatch')}}
         run: |
-          sed "s/PACKAGE_VERSION/${latest_version}/g" template/twilight/PKGBUILD_twilight_template > twilight/PKGBUILD
+          sed "s/PACKAGE_VERSION/${{ needs.check_for_updates.outputs.new_pkgver }}/g" template/twilight/PKGBUILD_twilight_template > twilight/PKGBUILD
+          echo "PKGBUILD generated from template for version ${{ needs.check_for_updates.outputs.new_pkgver }}"
+
       - name: 'Save PKGBUILD for Validation'
         uses: actions/upload-artifact@v4
-        if: ${{(steps.check_version.outputs.need_update == 'true') || (github.event_name == 'workflow_dispatch')}}
         with:
           name: PKGBUILD
-          path: stable/PKGBUILD
+          path: twilight/PKGBUILD
           retention-days: 1
+
       - name: Publish AUR package
         uses: KSXGitHub/github-actions-deploy-aur@v3.0.1
-        if: ${{(steps.check_version.outputs.need_update == 'true') || (github.event_name == 'workflow_dispatch')}}
         with:
           pkgname: zen-twilight-bin
           pkgbuild: twilight/PKGBUILD
@@ -58,6 +67,5 @@ jobs:
           commit_username: ${{ secrets.AUR_USERNAME }}
           commit_email: ${{ secrets.AUR_EMAIL }}
           ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
-          commit_message: ${{ steps.check_version.outputs.update_message }}
+          commit_message: ${{ needs.check_for_updates.outputs.commit_message }}
           ssh_keyscan_types: rsa,ecdsa,ed25519
-      
