@@ -63,14 +63,11 @@ jobs:
           else
             echo "Package is up-to-date."
             echo "needs_update=false" >> $GITHUB_OUTPUT
-            echo "new_pkgver=${{ env.GH_PKGVER }}" >> $GITHUB_OUTPUT
-            echo "new_pkgrel=1" >> $GITHUB_OUTPUT
-            echo "commit_message=chore: Update to version ${{ env.GH_PKGVER }}" >> $GITHUB_OUTPUT
           fi
 
   aur-publish:
     needs: check_for_updates
-    if: needs.check_for_updates.outputs.needs_update == 'false'
+    if: needs.check_for_updates.outputs.needs_update == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -88,3 +85,19 @@ jobs:
           name: PKGBUILD
           path: stable/PKGBUILD
           retention-days: 1
+      - name: Publish AUR package
+        uses: KSXGitHub/github-actions-deploy-aur@v3.0.1
+        with:
+          pkgname: zen-browser-bin
+          pkgbuild: stable/PKGBUILD
+          assets: |
+            stable/policies.json
+            stable/zen.desktop
+            stable/zen-browser.sh
+          commit_username: ${{ secrets.AUR_USERNAME }}
+          commit_email: ${{ secrets.AUR_EMAIL }}
+          ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+          updpkgsums: true
+          post_process: rm *.tar.xz
+          commit_message: ${{ needs.check_for_updates.outputs.commit_message }}
+          ssh_keyscan_types: rsa,ecdsa,ed25519
