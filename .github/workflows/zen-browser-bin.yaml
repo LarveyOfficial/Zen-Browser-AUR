@@ -67,7 +67,7 @@ jobs:
 
   aur-publish:
     needs: check_for_updates
-    if: needs.check_for_updates.outputs.needs_update == 'true'
+    if: needs.check_for_updates.outputs.needs_update == 'false'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
