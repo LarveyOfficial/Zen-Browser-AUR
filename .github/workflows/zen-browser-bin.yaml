@@ -1,50 +1,88 @@
 name: Update AUR Package - zen-browser-bin
 
 on:
+  schedule:
+    # Runs every hour
+    - cron: '0 * * * *'
   workflow_dispatch:
-    inputs:
-      version:
-        description: "Version Number"
-        required: true
-      versionNum:
-        description: "AUR Update Version Number"
-        required: true
-        default: "1"
-      message:
-        description: "Commit Message"
-        required: true
-        default: "Updated to "
 
 jobs:
-  aur-publish:
+  check_for_updates:
     runs-on: ubuntu-latest
     outputs:
-      need_update: ${{ steps.check_version.outputs.need_update}}
+      needs_update: ${{ steps.version_check.outputs.needs_update }}
+      new_pkgver: ${{ steps.version_check.outputs.new_pkgver }}
+      new_pkgrel: ${{ steps.version_check.outputs.new_pkgrel }}
+      commit_message: ${{ steps.version_check.outputs.commit_message }}
     steps:
-      - uses: actions/checkout@v3
-      - name: Update PKGBUILD
-        if: ${{(steps.check_version.outputs.need_update == 'true') || (github.event_name == 'workflow_dispatch')}}
+      - name: Get AUR package info
+        id: aur_info
         run: |
-          sed -e "s/PACKAGE_VERSION/${{github.event.inputs.version}}/g" -e "s/PACKAGE_ITERATION/${{github.event.inputs.versionNum}}/g" template/stable/PKGBUILD_stable_template > stable/PKGBUILD
+          PKGBUILD_CONTENT=$(curl -s 'https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=zen-browser-bin')
+          AUR_PKGVER=$(echo "$PKGBUILD_CONTENT" | grep '^pkgver=' | sed 's/^pkgver=//')
+          AUR_PKGREL=$(echo "$PKGBUILD_CONTENT" | grep '^pkgrel=' | sed 's/^pkgrel=//')
+          AUR_CHECKSUM=$(echo "$PKGBUILD_CONTENT" | grep '^sha256sums_x86_64=' | sed 's/^.*=//' | sed "s/[()']//g")
+          
+          echo "AUR_PKGVER=${AUR_PKGVER}" >> $GITHUB_ENV
+          echo "AUR_PKGREL=${AUR_PKGREL}" >> $GITHUB_ENV
+          echo "AUR_CHECKSUM=${AUR_CHECKSUM}" >> $GITHUB_ENV
+          
+          echo "Current AUR pkgver: $AUR_PKGVER"
+          echo "Current AUR pkgrel: $AUR_PKGREL"
+          echo "Current AUR x86_64 checksum: $AUR_CHECKSUM"
+
+      - name: Get latest GitHub release info
+        id: github_release
+        run: |
+          LATEST_RELEASE_JSON=$(curl -s https://api.github.com/repos/zen-browser/desktop/releases/latest)
+          GH_PKGVER=$(echo "$LATEST_RELEASE_JSON" | jq -r '.tag_name')
+          GH_CHECKSUM=$(echo "$LATEST_RELEASE_JSON" | jq -r '.assets[] | select(.name == "zen.linux-x86_64.tar.xz") | .digest' | sed 's/sha256://')
+
+          echo "GH_PKGVER=${GH_PKGVER}" >> $GITHUB_ENV
+          echo "GH_CHECKSUM=${GH_CHECKSUM}" >> $GITHUB_ENV
+
+          echo "Latest GitHub version: $GH_PKGVER"
+          echo "Latest GitHub x86_64 checksum: $GH_CHECKSUM"
+
+      - name: Compare versions and decide action
+        id: version_check
+        run: |
+          if [ "${{ env.AUR_PKGVER }}" != "${{ env.GH_PKGVER }}" ]; then
+            echo "New version found. Preparing update."
+            echo "needs_update=true" >> $GITHUB_OUTPUT
+            echo "new_pkgver=${{ env.GH_PKGVER }}" >> $GITHUB_OUTPUT
+            echo "new_pkgrel=1" >> $GITHUB_OUTPUT
+            echo "commit_message=chore: Update to version ${{ env.GH_PKGVER }}" >> $GITHUB_OUTPUT
+          elif [ "${{ env.AUR_CHECKSUM }}" != "${{ env.GH_CHECKSUM }}" ]; then
+            echo "Same version, but checksum has changed. Bumping pkgrel."
+            NEW_PKGREL=$((${{ env.AUR_PKGREL }} + 1))
+            echo "needs_update=true" >> $GITHUB_OUTPUT
+            echo "new_pkgver=${{ env.AUR_PKGVER }}" >> $GITHUB_OUTPUT
+            echo "new_pkgrel=${NEW_PKGREL}" >> $GITHUB_OUTPUT
+            echo "commit_message=fix: Rebuild with updated assets for v${{ env.AUR_PKGVER }}-${NEW_PKGREL}" >> $GITHUB_OUTPUT
+          else
+            echo "Package is up-to-date."
+            echo "needs_update=false" >> $GITHUB_OUTPUT
+          fi
+
+  aur-publish:
+    needs: check_for_updates
+    if: needs.check_for_updates.outputs.needs_update == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update PKGBUILD
+        run: |
+          sed -e "s/PACKAGE_VERSION/${{ needs.check_for_updates.outputs.new_pkgver }}/g" \
+              -e "s/PACKAGE_ITERATION/${{ needs.check_for_updates.outputs.new_pkgrel }}/g" \
+              template/stable/PKGBUILD_stable_template > stable/PKGBUILD
+          echo "PKGBUILD generated from template for version ${{ needs.check_for_updates.outputs.new_pkgver }}-${{ needs.check_for_updates.outputs.new_pkgrel }}"
+
       - name: 'Save PKGBUILD for Validation'
         uses: actions/upload-artifact@v4
         with:
           name: PKGBUILD
           path: stable/PKGBUILD
           retention-days: 1
-      - name: Publish AUR package
-        uses: KSXGitHub/github-actions-deploy-aur@v3.0.1
-        with:
-          pkgname: zen-browser-bin
-          pkgbuild: stable/PKGBUILD
-          assets: |
-            stable/policies.json
-            stable/zen.desktop
-            stable/zen-browser.sh
-          commit_username: ${{ secrets.AUR_USERNAME }}
-          commit_email: ${{ secrets.AUR_EMAIL }}
-          ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
-          updpkgsums: true
-          post_process: rm *.tar.xz
-          commit_message: ${{github.event.inputs.message}}
-          ssh_keyscan_types: rsa,ecdsa,ed25519
+
