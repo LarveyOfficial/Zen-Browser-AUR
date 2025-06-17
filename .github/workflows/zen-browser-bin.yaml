@@ -59,7 +59,7 @@ jobs:
             echo "needs_update=true" >> $GITHUB_OUTPUT
             echo "new_pkgver=${{ env.AUR_PKGVER }}" >> $GITHUB_OUTPUT
             echo "new_pkgrel=${NEW_PKGREL}" >> $GITHUB_OUTPUT
-            echo "commit_message=fix: Rebuild with updated assets for v${{ env.AUR_PKGVER }}-${NEW_PKGREL}" >> $GITHUB_OUTPUT
+            echo "commit_message=fix: Update checksums for v${{ env.AUR_PKGVER }}-${NEW_PKGREL}" >> $GITHUB_OUTPUT
           else
             echo "Package is up-to-date."
             echo "needs_update=false" >> $GITHUB_OUTPUT
