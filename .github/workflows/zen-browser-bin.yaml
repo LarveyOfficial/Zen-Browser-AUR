@@ -64,7 +64,6 @@ jobs:
             echo "Package is up-to-date."
             echo "needs_update=false" >> $GITHUB_OUTPUT
             NEW_PKGREL=$((${{ env.AUR_PKGREL }} + 1))
-            echo "needs_update=true" >> $GITHUB_OUTPUT
             echo "new_pkgver=${{ env.AUR_PKGVER }}" >> $GITHUB_OUTPUT
             echo "new_pkgrel=${NEW_PKGREL}" >> $GITHUB_OUTPUT
           fi
