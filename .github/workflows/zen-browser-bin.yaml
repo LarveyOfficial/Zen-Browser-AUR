@@ -47,7 +47,10 @@ jobs:
       - name: Compare versions and decide action
         id: version_check
         run: |
-          if [ -n "${{ env.GH_PKGVER }}" ] && [ "${{ env.GH_PKGVER }}" != "null" ] && [ "${{ env.AUR_PKGVER }}" != "${{ env.GH_PKGVER }}" ]; then
+          if [ -z "${{ env.GH_PKGVER }}" ] || [ "${{ env.GH_PKGVER }}" == "null" ] || [ -z "${{ env.GH_CHECKSUM }}" ] || [ "${{ env.GH_CHECKSUM }}" == "null" ]; then
+            echo "GitHub version is invalid (empty or the string 'null'). Cannot compare."
+            echo "needs_update=false" >> $GITHUB_OUTPUT
+          elif [ "${{ env.AUR_PKGVER }}" != "${{ env.GH_PKGVER }}" ]; then
             echo "New version found. Preparing update."
             echo "needs_update=true" >> $GITHUB_OUTPUT
             echo "new_pkgver=${{ env.GH_PKGVER }}" >> $GITHUB_OUTPUT
