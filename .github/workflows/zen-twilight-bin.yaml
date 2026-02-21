@@ -17,7 +17,7 @@ jobs:
       - name: Compare versions and decide action
         id: version_check
         run: |
-          LATEST_VERSION=$(curl -s https://api.github.com/repos/zen-browser/desktop/releases/tags/twilight | jq -r '.name' | sed -e 's/Twilight build - //' -e 's/ at.*//' -e 's/ /-/g' -e 's/[()]//g' -e 's/-/\./g')
+          LATEST_VERSION=$(curl -s https://api.github.com/repos/zen-browser/desktop/releases/tags/twilight-1 | jq -r '.name' | sed -e 's/Twilight build - //' -e 's/ at.*//' -e 's/ /-/g' -e 's/[()]//g' -e 's/-/\./g')
           echo "Latest GitHub version: $LATEST_VERSION"
 
           CURRENT_VERSION=$(curl -s 'https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=zen-twilight-bin' | grep '^pkgver=' | sed 's/^pkgver=//')
