@@ -352,7 +352,7 @@ Name[zh_CN]=新建窗口
 Name[zh_TW]=開新視窗
 
 [Desktop Action new-blank-window]
-Exec=launch-script.sh --blank-window %u
+Exec=/opt/zen-twilight-bin/zen-bin --blank-window %u
 Name=New Blank Window
 Name[ach]=New Blank Window
 Name[af]=New Blank Window
