@@ -18,7 +18,7 @@ jobs:
       - name: Get AUR package info
         id: aur_info
         run: |
-          PKGBUILD_CONTENT=$(curl -s 'https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=zen-browser-bin&t=${GITHUB_RUN_ID}')
+          PKGBUILD_CONTENT=$(curl -s "https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=zen-browser-bin&t=${GITHUB_RUN_ID}")
           AUR_PKGVER=$(echo "$PKGBUILD_CONTENT" | grep '^pkgver=' | sed 's/^pkgver=//')
           AUR_PKGREL=$(echo "$PKGBUILD_CONTENT" | grep '^pkgrel=' | sed 's/^pkgrel=//')
           AUR_CHECKSUM=$(echo "$PKGBUILD_CONTENT" | grep '^sha256sums_x86_64=' | sed 's/^.*=//' | sed "s/[()']//g")
