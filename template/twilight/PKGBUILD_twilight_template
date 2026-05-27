@@ -28,7 +28,7 @@ source=("$_pkgname.sh"
         "policies.json")
 sha256sums=('b26c2221dc9ee8b6041aea31ae7b030bf9de5facc9933109f829559bd1bdb4fb'
             '3c8dfd8d12a6ac0c106b7d738718df37e979275c1dc85aa678f6b10b9ca8603c'
-            'fb4f4d3aa52abb744d94981a0f8912628cd627d51dcfdbc0bc6ca148eec8bd1f')
+            'fd9572d178ea1a5edf427ca85bad3fb2d83be2e250e62bad13951d70d977bd0f')
 sha256sums_x86_64=('SKIP')
 sha256sums_aarch64=('SKIP')
 
